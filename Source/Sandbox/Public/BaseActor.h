@@ -80,7 +80,7 @@ public:
 	
 private:
 	FVector StartLocation;
-	FTimerHandle TimerHandle;
+	FTimerHandle ColorTimerHandle;
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicMaterial;
 };

@@ -19,10 +19,8 @@ void ABaseActor::BeginPlay()
 	if (ChangeColor)
 	{
 		DynamicMaterial = MeshComp->CreateAndSetMaterialInstanceDynamic(0);
-		GetWorldTimerManager().SetTimer(TimerHandle, this, &ABaseActor::SetRandomColor,TimerRate,true);
+		GetWorldTimerManager().SetTimer(ColorTimerHandle, this, &ABaseActor::SetRandomColor,TimerRate,true);
 	}
-	
-	
 }
 
 void ABaseActor::Tick(const float DeltaTime)
