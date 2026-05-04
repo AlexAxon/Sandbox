@@ -14,14 +14,9 @@ void ABaseActor::BeginPlay()
 	Super::BeginPlay();
 	StartLocation = GetActorLocation();
 	PrintTransform();
+	ChangeColor();
+	/////////////////////////////////////////////////
 	
-	if (EnableColor)
-	{
-		if (UMaterialInstanceDynamic* DynamicMaterial = MeshComp->CreateAndSetMaterialInstanceDynamic(0))
-		{
-			DynamicMaterial->SetVectorParameterValue("BaseColor", StartColor);
-		}
-	}
 	
 }
 
@@ -101,5 +96,16 @@ void ABaseActor::Movement()
 			AddActorLocalOffset(FVector::UnitZ());
 		}
 		break;
+	}
+}
+
+void ABaseActor::ChangeColor()
+{
+	if (EnableColor)
+	{
+		if (UMaterialInstanceDynamic* DynamicMaterial = MeshComp->CreateAndSetMaterialInstanceDynamic(0))
+		{
+			DynamicMaterial->SetVectorParameterValue("BaseColor", StartColor);
+		}
 	}
 }

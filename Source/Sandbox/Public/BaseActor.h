@@ -50,6 +50,8 @@ private:
 	void PrintTransform() const;
 	
 	void Movement();
+	
+	void ChangeColor();
 
 public:
 	UPROPERTY(VisibleAnywhere)
@@ -78,6 +80,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = "Color")
 	float ColorOffset = 1.0f;
+	
+	UPROPERTY(EditAnywhere, Category = "Color")
+	float TimerRate = 2.0f;
 	
 private:
 	FVector StartLocation;
