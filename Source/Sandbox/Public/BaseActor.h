@@ -51,7 +51,7 @@ private:
 	
 	void Movement();
 	
-	void ChangeColor();
+	void SetRandomColor();
 
 public:
 	UPROPERTY(VisibleAnywhere)
@@ -73,17 +73,14 @@ public:
 	FMovementSettings MovementSettings;
 	
 	UPROPERTY(EditAnywhere, Category = "Color")
-	bool EnableColor = false;
-	
-	UPROPERTY(EditAnywhere, Category = "Color")
-	FLinearColor StartColor;
-	
-	UPROPERTY(EditAnywhere, Category = "Color")
-	float ColorOffset = 1.0f;
+	bool ChangeColor = false;
 	
 	UPROPERTY(EditAnywhere, Category = "Color")
 	float TimerRate = 2.0f;
 	
 private:
 	FVector StartLocation;
+	FTimerHandle TimerHandle;
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMaterial;
 };

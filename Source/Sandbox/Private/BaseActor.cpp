@@ -14,8 +14,13 @@ void ABaseActor::BeginPlay()
 	Super::BeginPlay();
 	StartLocation = GetActorLocation();
 	PrintTransform();
-	ChangeColor();
 	/////////////////////////////////////////////////
+	
+	if (ChangeColor)
+	{
+		DynamicMaterial = MeshComp->CreateAndSetMaterialInstanceDynamic(0);
+		GetWorldTimerManager().SetTimer(TimerHandle, this, &ABaseActor::SetRandomColor,TimerRate,true);
+	}
 	
 	
 }
@@ -99,13 +104,8 @@ void ABaseActor::Movement()
 	}
 }
 
-void ABaseActor::ChangeColor()
+void ABaseActor::SetRandomColor()
 {
-	if (EnableColor)
-	{
-		if (UMaterialInstanceDynamic* DynamicMaterial = MeshComp->CreateAndSetMaterialInstanceDynamic(0))
-		{
-			DynamicMaterial->SetVectorParameterValue("BaseColor", StartColor);
-		}
-	}
+	DynamicMaterial->SetVectorParameterValue("BaseColor", FLinearColor::MakeRandomColor());
 }
+
