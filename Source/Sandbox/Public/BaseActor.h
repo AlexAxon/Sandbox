@@ -43,17 +43,8 @@ protected:
 
 public:	
 	virtual void Tick(float DeltaTime) override;
-
-private:
-	void PrintStats() const;
 	
-	void PrintTransform() const;
-	
-	void Movement();
-	
-	void SetRandomColor();
-
-public:
+	// Для доступа из SpawnManager
 	UPROPERTY(VisibleAnywhere)
 	UStaticMeshComponent* MeshComp;
 	
@@ -77,10 +68,24 @@ public:
 	
 	UPROPERTY(EditAnywhere, Category = "Color")
 	float TimerRate = 2.0f;
+
+private:
+	void PrintStats() const;
+	
+	void PrintTransform() const;
+	
+	void Movement();
+	
+	void SetRandomColor();
+	
+	void MoveTowardsPlayer(float DeltaTime);
 	
 private:
 	FVector StartLocation;
 	FTimerHandle ColorTimerHandle;
 	UPROPERTY()
 	UMaterialInstanceDynamic* DynamicMaterial;
+	FVector PlayerStartLocation;
+	float CurrentMovementTime = 0.0f;
+	bool bMovingAway = true;
 };
