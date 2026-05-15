@@ -19,6 +19,16 @@ ASandboxPawnBase::ASandboxPawnBase()
 	CameraComponent->SetupAttachment(SceneComponent);
 }
 
+void ASandboxPawnBase::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+}
+
+void ASandboxPawnBase::UnPossessed()
+{
+	Super::UnPossessed();
+}
+
 // Called when the game starts or when spawned
 void ASandboxPawnBase::BeginPlay()
 {
@@ -34,6 +44,7 @@ void ASandboxPawnBase::Tick(float DeltaTime)
 	{
 		FVector NewLocation = GetActorLocation() + VelocityVector * DeltaTime * MovementSpeed;
 		SetActorLocation(NewLocation);
+		VelocityVector = FVector::ZeroVector;
 	}
 }
 
