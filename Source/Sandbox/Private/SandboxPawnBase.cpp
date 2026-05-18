@@ -1,7 +1,7 @@
 // ITHub 2026
 
-
 #include "SandboxPawnBase.h"
+#include "GameFramework/SpringArmComponent.h"
 
 // Sets default values
 ASandboxPawnBase::ASandboxPawnBase()
@@ -14,9 +14,19 @@ ASandboxPawnBase::ASandboxPawnBase()
 	
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>("Mesh");
 	StaticMeshComponent->SetupAttachment(SceneComponent);
+
+	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>("SpringArm");
+	SpringArmComponent->SetupAttachment(SceneComponent);
+	SpringArmComponent->bUsePawnControlRotation = true;
+	SpringArmComponent->bInheritPitch = true;
+	SpringArmComponent->bInheritYaw = true;
+	SpringArmComponent->bInheritRoll = true;
 	
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("Camera");
-	CameraComponent->SetupAttachment(SceneComponent);
+	CameraComponent->SetupAttachment(SpringArmComponent);
+	
+	bUseControllerRotationYaw = true;
+	bUseControllerRotationPitch = true;
 }
 
 void ASandboxPawnBase::PossessedBy(AController* NewController)
@@ -34,6 +44,16 @@ void ASandboxPawnBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if(PlayerController)
+	{
+		PlayerController->bShowMouseCursor = false;
+		PlayerController->bEnableClickEvents = true;
+		PlayerController->bEnableMouseOverEvents = true;
+		
+		PlayerController->SetInputMode(FInputModeGameOnly());
+		PlayerController->SetShowMouseCursor(false);
+	}
 }
 
 // Called every frame
@@ -42,7 +62,17 @@ void ASandboxPawnBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if(!VelocityVector.IsZero())
 	{
-		FVector NewLocation = GetActorLocation() + VelocityVector * DeltaTime * MovementSpeed;
+		FVector ForwardDirection = GetControlRotation().Vector();
+		ForwardDirection.Z = 0;
+		ForwardDirection.Normalize();
+		
+		FVector RightDirection = GetControlRotation().Quaternion().GetRightVector();
+		RightDirection.Z = 0;
+		RightDirection.Normalize();
+		
+		FVector NewLocation = GetActorLocation() + 
+			(ForwardDirection * VelocityVector.X + RightDirection * VelocityVector.Y) * 
+			DeltaTime * MovementSpeed;
 		SetActorLocation(NewLocation);
 		VelocityVector = FVector::ZeroVector;
 	}
@@ -54,7 +84,8 @@ void ASandboxPawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASandboxPawnBase::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASandboxPawnBase::MoveRight);
-
+	PlayerInputComponent->BindAxis("Turn", this, &ASandboxPawnBase::Turn);
+	PlayerInputComponent->BindAxis("LookUp", this, &ASandboxPawnBase::LookUp);
 }
 
 void ASandboxPawnBase::MoveForward(float Value)
@@ -67,3 +98,12 @@ void ASandboxPawnBase::MoveRight(float Value)
 	VelocityVector.Y = Value;
 }
 
+void ASandboxPawnBase::Turn(float Value)
+{
+	AddControllerYawInput(Value * MouseSensitivity);
+}
+
+void ASandboxPawnBase::LookUp(float Value)
+{
+	AddControllerPitchInput(Value * MouseSensitivity);
+}
