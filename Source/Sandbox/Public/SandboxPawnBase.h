@@ -63,4 +63,8 @@ private:
 	void MoveRight(float Value);
 	void Turn(float Value);
 	void LookUp(float Value);
+	
+	void Movement(float DeltaTime);
+	
+	void TraceFromCamera();
 };

@@ -2,8 +2,8 @@
 
 #include "SandboxPawnBase.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
 
-// Sets default values
 ASandboxPawnBase::ASandboxPawnBase()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -39,7 +39,6 @@ void ASandboxPawnBase::UnPossessed()
 	Super::UnPossessed();
 }
 
-// Called when the game starts or when spawned
 void ASandboxPawnBase::BeginPlay()
 {
 	Super::BeginPlay();
@@ -60,22 +59,8 @@ void ASandboxPawnBase::BeginPlay()
 void ASandboxPawnBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if(!VelocityVector.IsZero())
-	{
-		FVector ForwardDirection = GetControlRotation().Vector();
-		ForwardDirection.Z = 0;
-		ForwardDirection.Normalize();
-		
-		FVector RightDirection = GetControlRotation().Quaternion().GetRightVector();
-		RightDirection.Z = 0;
-		RightDirection.Normalize();
-		
-		FVector NewLocation = GetActorLocation() + 
-			(ForwardDirection * VelocityVector.X + RightDirection * VelocityVector.Y) * 
-			DeltaTime * MovementSpeed;
-		SetActorLocation(NewLocation);
-		VelocityVector = FVector::ZeroVector;
-	}
+	Movement(DeltaTime);
+	TraceFromCamera();
 }
 
 // Called to bind functionality to input
@@ -84,8 +69,8 @@ void ASandboxPawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASandboxPawnBase::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASandboxPawnBase::MoveRight);
-	PlayerInputComponent->BindAxis("Turn", this, &ASandboxPawnBase::Turn);
-	PlayerInputComponent->BindAxis("LookUp", this, &ASandboxPawnBase::LookUp);
+	PlayerInputComponent->BindAxis("Yaw", this, &ASandboxPawnBase::Turn);
+	PlayerInputComponent->BindAxis("Pitch", this, &ASandboxPawnBase::LookUp);
 }
 
 void ASandboxPawnBase::MoveForward(float Value)
@@ -106,4 +91,64 @@ void ASandboxPawnBase::Turn(float Value)
 void ASandboxPawnBase::LookUp(float Value)
 {
 	AddControllerPitchInput(Value * MouseSensitivity);
+}
+
+void ASandboxPawnBase::Movement(float DeltaTime)
+{
+	if(!VelocityVector.IsZero())
+	{
+		FVector ForwardDirection = GetControlRotation().Vector();
+		ForwardDirection.Z = 0;
+		ForwardDirection.Normalize();
+		
+		FVector RightDirection = GetControlRotation().Quaternion().GetRightVector();
+		RightDirection.Z = 0;
+		RightDirection.Normalize();
+		
+		FVector NewLocation = GetActorLocation() + 
+			(ForwardDirection * VelocityVector.X + RightDirection * VelocityVector.Y) * 
+			DeltaTime * MovementSpeed;
+		SetActorLocation(NewLocation);
+		VelocityVector = FVector::ZeroVector;
+	}
+}
+
+void ASandboxPawnBase::TraceFromCamera()
+{
+	if (!CameraComponent){ return;}
+	
+	const FVector StartLocation = CameraComponent->GetComponentLocation();
+	const FVector ForwardVector = CameraComponent->GetForwardVector();
+	
+	const float TraceDistance = 1000.0f;
+	const FVector EndLocation = StartLocation + ForwardVector * TraceDistance;
+	
+	FCollisionQueryParams TraceParams;
+	TraceParams.AddIgnoredActor(this);
+	TraceParams.bTraceComplex = true;
+	
+	
+	FHitResult HitResult;
+	const bool bHit = GetWorld()->LineTraceSingleByChannel(
+		HitResult, 
+		StartLocation, 
+		EndLocation, 
+		ECC_Visibility, 
+		TraceParams);
+	
+	//DrawDebugLine(GetWorld(), 
+	//	StartLocation, 
+	//	EndLocation, 
+	//	bHit ? FColor::Green : FColor::Red,
+	//	false,
+	//	0.0f,
+	//	0,
+	//	2.0f);
+	
+	if (bHit && HitResult.GetActor())
+	{
+		FString HitActorName = HitResult.GetActor()->GetName();
+		
+		UKismetSystemLibrary::PrintString(GetWorld(), HitActorName, true, true, FLinearColor::Red, 0.0f);
+	}
 }
