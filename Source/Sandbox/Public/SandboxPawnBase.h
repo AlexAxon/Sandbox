@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Camera/CameraComponent.h"
 #include "GameFramework/Pawn.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "SandboxPawnBase.generated.h"
 
 UCLASS()
@@ -23,10 +24,22 @@ public:
 	UStaticMeshComponent* StaticMeshComponent;
 	
 	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* CameraComponent;
+	USpringArmComponent* SpringArmComponent; // SpringArm
 	
 	UPROPERTY(VisibleAnywhere)
+	UCameraComponent* CameraComponent;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float MovementSpeed = 600.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float MouseSensitivity = 1.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float MaxPitchAngle = 80.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Camera")
+	float MinPitchAngle = -80.0f;
 	
 	virtual void PossessedBy(AController* NewController) override;
 	virtual void UnPossessed() override;
@@ -48,4 +61,6 @@ private:
 	
 	void MoveForward(float Value);
 	void MoveRight(float Value);
+	void Turn(float Value);
+	void LookUp(float Value);
 };
