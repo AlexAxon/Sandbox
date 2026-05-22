@@ -67,10 +67,15 @@ void ASandboxPawnBase::Tick(float DeltaTime)
 void ASandboxPawnBase::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	
+	// Axis for move and rotate
 	PlayerInputComponent->BindAxis("MoveForward", this, &ASandboxPawnBase::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASandboxPawnBase::MoveRight);
 	PlayerInputComponent->BindAxis("Yaw", this, &ASandboxPawnBase::Turn);
 	PlayerInputComponent->BindAxis("Pitch", this, &ASandboxPawnBase::LookUp);
+	// Delete and simulate physics event
+	PlayerInputComponent->BindAction("LeftClick", IE_Pressed, this, &ASandboxPawnBase::OnLeftClick);
+	PlayerInputComponent->BindAction("RightClick", IE_Pressed, this, &ASandboxPawnBase::OnRightClick);
 }
 
 void ASandboxPawnBase::MoveForward(float Value)
@@ -127,7 +132,6 @@ void ASandboxPawnBase::TraceFromCamera()
 	TraceParams.AddIgnoredActor(this);
 	TraceParams.bTraceComplex = true;
 	
-	
 	FHitResult HitResult;
 	const bool bHit = GetWorld()->LineTraceSingleByChannel(
 		HitResult, 
@@ -147,8 +151,55 @@ void ASandboxPawnBase::TraceFromCamera()
 	
 	if (bHit && HitResult.GetActor())
 	{
+		CurrentHitActor = HitResult.GetActor();
+		
 		FString HitActorName = HitResult.GetActor()->GetName();
 		
 		UKismetSystemLibrary::PrintString(GetWorld(), HitActorName, true, true, FLinearColor::Red, 0.0f);
+	}
+	else
+	{
+		CurrentHitActor = nullptr;
+	}
+}
+
+void ASandboxPawnBase::OnLeftClick()
+{
+	if (CurrentHitActor && CurrentHitActor->IsValidLowLevel())
+	{
+		CurrentHitActor->Destroy();
+		CurrentHitActor = nullptr;
+		
+		UKismetSystemLibrary::PrintString(GetWorld(), TEXT("Actor destroyed!"), true, true, FLinearColor::Green, 1.0f);
+	}
+	else
+	{
+		UKismetSystemLibrary::PrintString(GetWorld(), TEXT("No actor to destroy!"), true, true, FLinearColor::Yellow, 1.0f);
+	}
+}
+
+void ASandboxPawnBase::OnRightClick()
+{
+	if (CurrentHitActor && CurrentHitActor->IsValidLowLevel())
+	{
+		UPrimitiveComponent* PrimitiveComponent = CurrentHitActor->FindComponentByClass<UPrimitiveComponent>();
+		if (PrimitiveComponent)
+		{
+			PrimitiveComponent->SetSimulatePhysics(true);
+			
+			UKismetSystemLibrary::PrintString(GetWorld(), 
+				FString::Printf(TEXT("Physics enabled for: %s"), *CurrentHitActor->GetName()), 
+				true, true, FLinearColor::Blue, 1.0f);
+		}
+		else
+		{
+			UKismetSystemLibrary::PrintString(GetWorld(), 
+				FString::Printf(TEXT("Actor %s has no primitive component!"), *CurrentHitActor->GetName()), 
+				true, true, FLinearColor::Red, 1.0f);
+		}
+	}
+	else
+	{
+		UKismetSystemLibrary::PrintString(GetWorld(), TEXT("No actor to enable physics!"), true, true, FLinearColor::Yellow, 1.0f);
 	}
 }

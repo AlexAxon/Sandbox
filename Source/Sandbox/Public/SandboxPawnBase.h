@@ -58,6 +58,7 @@ public:
 	
 private:
 	FVector VelocityVector = FVector::ZeroVector;
+	AActor* CurrentHitActor = nullptr; // To store the current object that LineTrace entered
 	
 	void MoveForward(float Value);
 	void MoveRight(float Value);
@@ -67,4 +68,8 @@ private:
 	void Movement(float DeltaTime);
 	
 	void TraceFromCamera();
+	
+	// New methods for processing clicks
+	void OnLeftClick();
+	void OnRightClick();
 };
